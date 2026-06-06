@@ -1196,7 +1196,7 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     const originalLastUpdated = state.config.lastUpdated || "";
     
     // Step 1: Get SHA of existing config.json
-    const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/config.json`;
+    const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/config.json?t=${Date.now()}`;
     const getRes = await fetch(getUrl, {
       headers: {
         "Authorization": `token ${pat}`,

@@ -1,4 +1,4 @@
-# deploy_to_github.ps1
+﻿# deploy_to_github.ps1
 # Script to upload project files to GitHub via API (without Git installed)
 $ErrorActionPreference = "Stop"
 

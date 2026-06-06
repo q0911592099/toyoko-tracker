@@ -1,4 +1,4 @@
-# generate_icons.ps1
+﻿# generate_icons.ps1
 # Creates icon-192.png and icon-512.png using .NET System.Drawing
 
 Add-Type -AssemblyName System.Drawing
