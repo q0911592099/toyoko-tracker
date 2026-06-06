@@ -200,7 +200,8 @@ function initFormConstraints() {
 
 // Load Configuration from API or local window global
 async function loadConfig() {
-  if (window.location.protocol === "file:") {
+  const isGitHubPages = window.location.hostname.endsWith('github.io');
+  if (window.location.protocol === "file:" || isGitHubPages) {
     if (window.toyokoConfig) {
       state.config = window.toyokoConfig;
       updateConfigUI();
@@ -247,7 +248,8 @@ function updateConfigUI() {
 
 // Load Hotels Database from API or local window global
 async function loadHotels() {
-  if (window.location.protocol === "file:") {
+  const isGitHubPages = window.location.hostname.endsWith('github.io');
+  if (window.location.protocol === "file:" || isGitHubPages) {
     if (window.toyokoHotels) {
       state.hotels = window.toyokoHotels;
       setupAutocomplete();
@@ -372,7 +374,8 @@ function setupAutocomplete() {
 
 // Load Crawled Data
 async function loadAvailability() {
-  if (window.location.protocol === "file:") {
+  const isGitHubPages = window.location.hostname.endsWith('github.io');
+  if (window.location.protocol === "file:" || isGitHubPages) {
     if (window.toyokoData) {
       state.availability = window.toyokoData;
       renderCalendars();
