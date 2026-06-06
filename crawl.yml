@@ -1,0 +1,36 @@
+name: Toyoko Inn Auto Crawl
+
+on:
+  schedule:
+    # Runs every 30 minutes (GitHub Cron scheduler)
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub web interface
+
+jobs:
+  crawl:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Required to push database changes back to GitHub Pages
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Run Crawler Script
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: node crawl.js
+
+      - name: Commit and Push Changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add availability.json data.js config.json config.js
+          git commit -m "Auto-update room availability [skip ci]" || echo "No changes to commit"
+          git push
