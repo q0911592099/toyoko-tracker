@@ -1,11 +1,11 @@
 window.toyokoConfig = {
-  "hotelCode": "00368",
-  "hotelName": "東橫INN 東京三之輪站",
-  "startDate": "2027-04-08",
+  "hotelCode": "00313",
+  "hotelName": "東橫INN 東京大森",
+  "startDate": "2027-03-31",
   "endDate": "2027-07-01",
   "roomCount": 1,
-  "peopleCount": 1,
-  "lastUpdated": "2026-06-06 05:07:53",
+  "peopleCount": 2,
+  "lastUpdated": "2026-06-06 06:02:54",
   "autoMonitor": true,
   "monitorInterval": 5
 };
