@@ -624,6 +624,22 @@ input, select, button {
   transform: translateY(-1px);
 }
 
+.btn-github {
+  background: #24292f;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(36, 41, 47, 0.2);
+}
+
+.btn-github:hover {
+  background: #1b1f23;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(36, 41, 47, 0.3);
+}
+
+.btn-github:active {
+  transform: translateY(0);
+}
+
 .btn-block {
   width: 100%;
 }

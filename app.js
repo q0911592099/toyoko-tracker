@@ -110,9 +110,21 @@ document.addEventListener("DOMContentLoaded", async () => {
       pingDot.className = "ping-dot green";
     }
     
-    // Hide local-only buttons and settings
-    el.refreshNowBtn.style.display = "none";
+    // Show refresh button as "Sync Latest Vacancy" on GitHub Pages
+    el.refreshNowBtn.style.display = "flex";
+    el.refreshNowBtn.querySelector("span").textContent = "同步最新空房";
+    
+    // Hide local-only save button
     el.saveConfigBtn.style.display = "none";
+    
+    // Configure GitHub Actions manual trigger button link
+    const githubActionsBtn = document.getElementById("github-actions-btn");
+    if (githubActionsBtn) {
+      const repoUrl = getGitHubRepoUrl();
+      if (repoUrl) {
+        githubActionsBtn.href = `${repoUrl}/actions`;
+      }
+    }
     
     if (el.autoMonitorCheckbox) {
       el.autoMonitorCheckbox.closest('.settings-group').style.display = "none";
@@ -201,7 +213,7 @@ function initFormConstraints() {
 // Load Configuration from API or local window global
 async function loadConfig() {
   const isGitHubPages = window.location.hostname.endsWith('github.io');
-  if (window.location.protocol === "file:" || isGitHubPages) {
+  if (window.location.protocol === "file:") {
     if (window.toyokoConfig) {
       state.config = window.toyokoConfig;
       updateConfigUI();
@@ -209,7 +221,8 @@ async function loadConfig() {
     return;
   }
   try {
-    const response = await fetch("/api/config");
+    const url = isGitHubPages ? `./config.json?t=${Date.now()}` : "/api/config";
+    const response = await fetch(url);
     if (response.ok) {
       state.config = await response.json();
       updateConfigUI();
@@ -375,7 +388,7 @@ function setupAutocomplete() {
 // Load Crawled Data
 async function loadAvailability() {
   const isGitHubPages = window.location.hostname.endsWith('github.io');
-  if (window.location.protocol === "file:" || isGitHubPages) {
+  if (window.location.protocol === "file:") {
     if (window.toyokoData) {
       state.availability = window.toyokoData;
       renderCalendars();
@@ -383,7 +396,8 @@ async function loadAvailability() {
     return;
   }
   try {
-    const response = await fetch("/api/data");
+    const url = isGitHubPages ? `./availability.json?t=${Date.now()}` : "/api/data";
+    const response = await fetch(url);
     if (response.ok) {
       state.availability = await response.json();
       renderCalendars();
@@ -905,6 +919,24 @@ function setupEventListeners() {
 
   // Live Refresh button
   el.refreshNowBtn.addEventListener("click", async () => {
+    const isGitHubPages = window.location.hostname.endsWith('github.io');
+    if (isGitHubPages) {
+      try {
+        el.refreshNowBtn.disabled = true;
+        el.refreshNowBtn.querySelector("span").textContent = "正在同步最新空房...";
+        await loadConfig();
+        await loadAvailability();
+        alert("已成功載入 GitHub 雲端最新空房資料！");
+      } catch (e) {
+        console.error(e);
+        alert("同步雲端資料失敗，請確認網路連線！");
+      } finally {
+        el.refreshNowBtn.disabled = false;
+        el.refreshNowBtn.querySelector("span").textContent = "同步最新空房";
+      }
+      return;
+    }
+    
     try {
       const response = await fetch("/api/refresh", { method: "POST" });
       if (response.ok) {
@@ -1052,4 +1084,17 @@ function showBrowserNotification(title, body) {
       }
     }
   }
+}
+
+// GitHub repo URL parser helper
+function getGitHubRepoUrl() {
+  const hostname = window.location.hostname;
+  const pathname = window.location.pathname;
+  if (hostname.endsWith('github.io')) {
+    const username = hostname.split('.')[0];
+    const pathParts = pathname.split('/').filter(Boolean);
+    const repoName = pathParts[0] || 'toyoko-tracker';
+    return `https://github.com/${username}/${repoName}`;
+  }
+  return null;
 }
