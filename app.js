@@ -21,6 +21,7 @@ const state = {
   availability: [],   // Crawled room availability data
   selectedDate: null, // Selected calendar date
   isCrawling: false,  // Crawler running status
+  isInitialLoad: true,
   pollingInterval: null,
   filters: {
     roomType: "all",      // "all", "single", "double"
@@ -246,6 +247,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (el.autoMonitorCheckbox) {
       el.autoMonitorCheckbox.closest('.settings-group').style.display = "none";
       el.monitorIntervalGroup.style.display = "none";
+    }
+    if (el.telegramNotifyCheckbox) {
+      el.telegramNotifyCheckbox.closest('.settings-group').style.display = "none";
+      el.telegramConfigGroup.style.display = "none";
     }
     
     // Show GitHub deployment and config exporter buttons
@@ -664,6 +669,15 @@ function renderCalendars() {
       hideDetailsPanel();
     }
   }
+  
+  // Smooth scroll to main workspace on mobile layouts for subsequent updates
+  if (!state.isInitialLoad && window.innerWidth <= 1200) {
+    const mainEl = document.querySelector(".main-workspace");
+    if (mainEl) {
+      mainEl.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+  state.isInitialLoad = false;
 }
 
 function generateMonthHTML(year, month) {
@@ -1312,6 +1326,18 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     btn.style.opacity = "0.7";
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>正在更新設定...</span>`;
     
+    // Show Crawl Overlay to prevent other actions and dim screen
+    if (el.crawlOverlay) {
+      el.crawlOverlay.style.display = "flex";
+      el.crawlOverlay.style.opacity = "1";
+      const stopBtn = document.getElementById("overlay-stop-btn");
+      if (stopBtn) stopBtn.style.display = "none"; // Cloud run cannot be cancelled directly from overlay
+    }
+    
+    if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = "正在更新雲端設定...";
+    if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = "5%";
+    if (el.overlayProgressFill) el.overlayProgressFill.style.width = "5%";
+    
     // Parse owner and repo
     const parts = repoUrl.replace("https://github.com/", "").split("/");
     const owner = parts[0];
@@ -1361,6 +1387,9 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     
     // Step 3: Trigger Workflow Dispatch
     btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>正在啟動雲端爬蟲...</span>`;
+    if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = "正在啟動雲端自動爬蟲...";
+    if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = "10%";
+    if (el.overlayProgressFill) el.overlayProgressFill.style.width = "10%";
     
     const dispatchUrl = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/crawl.yml/dispatches`;
     
@@ -1398,6 +1427,9 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
       progressPercent.textContent = "10%";
       progressFill.style.width = "10%";
     }
+    if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = "雲端爬蟲已啟動，正在抓取最新房況 (預估 1-2 分鐘)...";
+    if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = "10%";
+    if (el.overlayProgressFill) el.overlayProgressFill.style.width = "10%";
     
     btn.innerHTML = `<i class="fa-solid fa-clock"></i><span>雲端爬網中...</span>`;
     
@@ -1412,11 +1444,17 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
       // Update fake progress to reassure the user
       if (currentPercent < 85) {
         currentPercent += 2;
-        if (progressPercent && progressFill) {
-          progressPercent.textContent = `${currentPercent}%`;
-          progressFill.style.width = `${currentPercent}%`;
-        }
       }
+      
+      const percentStr = `${currentPercent}%`;
+      if (progressPercent) progressPercent.textContent = percentStr;
+      if (progressFill) progressFill.style.width = percentStr;
+      if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = percentStr;
+      if (el.overlayProgressFill) el.overlayProgressFill.style.width = percentStr;
+      
+      const statusMsg = `雲端爬蟲執行中，正在抓取最新房況 (已讀取 ${pollAttempts * 5} 秒)...`;
+      if (progressMsg) progressMsg.textContent = statusMsg;
+      if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = statusMsg;
       
       try {
         // Fetch the config.json directly from GitHub API using PAT
@@ -1437,11 +1475,15 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
             // Success! The background crawler has updated config.json!
             clearInterval(pollInterval);
             
-            if (progressMsg) progressMsg.textContent = "雲端爬取完成！正在讀取最新房況資料...";
+            const completionMsg = "雲端爬取完成！正在讀取最新房況資料...";
+            if (progressMsg) progressMsg.textContent = completionMsg;
+            if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = completionMsg;
             if (progressPercent && progressFill) {
               progressPercent.textContent = "90%";
               progressFill.style.width = "90%";
             }
+            if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = "90%";
+            if (el.overlayProgressFill) el.overlayProgressFill.style.width = "90%";
             
             // Fetch the updated availability.json directly from GitHub API
             const availRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/availability.json?t=${Date.now()}`, {
@@ -1464,16 +1506,25 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
               updateConfigUI();
               renderCalendars();
               
-              if (progressMsg) progressMsg.textContent = "自動同步成功！最新房況已載入。";
+              const successMsg = "自動同步成功！最新房況已載入。";
+              if (progressMsg) progressMsg.textContent = successMsg;
+              if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = successMsg;
               if (progressPercent && progressFill) {
                 progressPercent.textContent = "100%";
                 progressFill.style.width = "100%";
               }
+              if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = "100%";
+              if (el.overlayProgressFill) el.overlayProgressFill.style.width = "100%";
               
               // Hide progress bar after 2.5s
               setTimeout(() => {
                 if (progressContainer) progressContainer.style.display = "none";
               }, 2500);
+              
+              // Hide overlay before showing alert
+              if (el.crawlOverlay) {
+                el.crawlOverlay.style.display = "none";
+              }
               
               alert(`🎉 雲端爬網完成！\n\n已為您自動更新並載入【${remoteConfig.hotelName}】的最新空房走勢！`);
             } else {
@@ -1494,6 +1545,9 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
       if (pollAttempts >= maxPollAttempts) {
         clearInterval(pollInterval);
         if (progressContainer) progressContainer.style.display = "none";
+        if (el.crawlOverlay) {
+          el.crawlOverlay.style.display = "none";
+        }
         
         // Restore button
         btn.style.pointerEvents = "auto";
@@ -1506,6 +1560,9 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     
   } catch (error) {
     console.error(error);
+    if (el.crawlOverlay) {
+      el.crawlOverlay.style.display = "none";
+    }
     alert(`❌ 發生錯誤：\n${error.message}`);
     // Restore button
     btn.style.pointerEvents = "auto";
@@ -1513,3 +1570,39 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     btn.innerHTML = originalText;
   }
 }
+
+// Mobile layout floating action button to toggle scroll between settings and calendar
+function setupMobileToggle() {
+  const toggleBtn = document.createElement("button");
+  toggleBtn.className = "mobile-toggle-btn";
+  toggleBtn.id = "mobile-layout-toggle";
+  toggleBtn.innerHTML = `<i class="fa-solid fa-calendar-days"></i><span>查看日曆結果</span>`;
+  document.body.appendChild(toggleBtn);
+  
+  toggleBtn.addEventListener("click", () => {
+    const mainEl = document.querySelector(".main-workspace");
+    const sidebarEl = document.querySelector(".sidebar");
+    const rect = mainEl.getBoundingClientRect();
+    
+    if (rect.top > 100) {
+      mainEl.scrollIntoView({ behavior: "smooth" });
+    } else {
+      sidebarEl.scrollIntoView({ behavior: "smooth" });
+    }
+  });
+  
+  window.addEventListener("scroll", () => {
+    const mainEl = document.querySelector(".main-workspace");
+    if (!mainEl) return;
+    const rect = mainEl.getBoundingClientRect();
+    
+    if (rect.top <= 100) {
+      toggleBtn.innerHTML = `<i class="fa-solid fa-sliders"></i><span>修改查詢設定</span>`;
+    } else {
+      toggleBtn.innerHTML = `<i class="fa-solid fa-calendar-days"></i><span>查看日曆結果</span>`;
+    }
+  });
+}
+
+// Call mobile toggle button setup
+setupMobileToggle();

@@ -1411,10 +1411,14 @@ input, select, button {
   }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .settings-row {
     flex-direction: column;
     gap: 12px;
+  }
+  .settings-card input[type="date"] {
+    padding: 8px 6px;
+    font-size: 0.85rem;
   }
 }
 
@@ -1540,4 +1544,36 @@ input, select, button {
 .guide-steps li a:hover {
   color: var(--color-available-hover);
   border-bottom-color: var(--color-available-hover);
+}
+
+/* Floating Toggle Button for Mobile */
+.mobile-toggle-btn {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 999;
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 30px;
+  padding: 12px 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 16px var(--color-primary-glow);
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.mobile-toggle-btn:hover {
+  background: #4f46e5;
+  transform: translateY(-2px);
+}
+
+@media (max-width: 1200px) {
+  .mobile-toggle-btn {
+    display: flex;
+  }
 }

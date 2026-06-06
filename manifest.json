@@ -1,6 +1,6 @@
 {
-  "name": "Toyoko Inn Room Tracker",
-  "short_name": "Toyoko Tracker",
+  "name": "東橫INN空房查詢",
+  "short_name": "東橫INN空房",
   "description": "東橫INN 空房智慧監測中心",
   "start_url": "./index.html",
   "display": "standalone",
