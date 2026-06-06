@@ -107,8 +107,9 @@
           <div class="settings-group" id="monitor-interval-group" style="display: none;">
             <label for="monitor-interval-select">監測頻率</label>
             <select id="monitor-interval-select">
+              <option value="5" selected>每 5 分鐘</option>
               <option value="10">每 10 分鐘</option>
-              <option value="30" selected>每 30 分鐘</option>
+              <option value="30">每 30 分鐘</option>
               <option value="60">每 1 小時</option>
               <option value="120">每 2 小時</option>
               <option value="240">每 4 小時</option>
@@ -121,18 +122,17 @@
           </button>
 
           <div id="github-controls" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;">
-            <button id="download-config-btn" class="btn btn-accent btn-block">
-              <i class="fa-solid fa-download"></i>
-              <span>下載雲端設定檔 (config.json)</span>
-            </button>
-            <a id="github-actions-btn" href="#" target="_blank" class="btn btn-github btn-block" style="text-decoration: none;">
-              <i class="fa-brands fa-github"></i>
-              <span>手動發起雲端爬網 (GitHub)</span>
-            </a>
-            <button id="show-deploy-guide-btn" class="btn btn-primary btn-block" style="background: var(--color-primary);">
-              <i class="fa-solid fa-book-open"></i>
-              <span>GitHub 部署說明指引</span>
-            </button>
+            <!-- GitHub PAT Input Group -->
+            <div class="pat-input-group" style="display: flex; flex-direction: column; gap: 5px; background: rgba(99, 102, 241, 0.05); padding: 10px; border-radius: 8px; border: 1px dashed rgba(99, 102, 241, 0.2);">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <label for="github-pat-input" style="font-size: 0.8rem; font-weight: 600; color: var(--color-primary);">GitHub 存取權杖 (PAT)</label>
+                <a href="#" id="pat-guide-link" style="font-size: 0.75rem; color: var(--color-primary); text-decoration: underline; cursor: pointer;">如何取得？</a>
+              </div>
+              <div class="input-with-icon" style="position: relative;">
+                <input type="password" id="github-pat-input" placeholder="貼上您的 token" style="width: 100%; font-size: 0.8rem; padding: 8px 30px 8px 10px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-bg-card); color: var(--color-text-primary);" autocomplete="off">
+                <i class="fa-solid fa-eye-slash" id="toggle-pat-visibility" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--color-text-muted); font-size: 0.85rem;"></i>
+              </div>
+            </div>
           </div>
         </div>
         
@@ -190,6 +190,10 @@
         <div class="header-right">
           <!-- Refresh controls -->
           <div class="action-buttons">
+            <a id="github-actions-btn" href="#" target="_blank" class="btn btn-github" style="display: none; text-decoration: none;">
+              <i class="fa-brands fa-github"></i>
+              <span>自動更新設定並啟動爬網</span>
+            </a>
             <button id="refresh-now-btn" class="btn btn-accent">
               <i class="fa-solid fa-rotate"></i>
               <span>立即更新空房</span>
@@ -360,7 +364,7 @@
           </li>
           <li>
             <strong>大功告成！</strong>
-            <p>大約 1 分鐘後，您的網站將部署在 <code>https://[您的GitHub帳號].github.io/toyoko-tracker/</code>！雲端機器人會每 30 分鐘在背景幫您抓取，有房時會直接傳送 Telegram 訊息到您的手機！</p>
+            <p>大約 1 分鐘後，您的網站將部署在 <code>https://[您的GitHub帳號].github.io/toyoko-tracker/</code>！雲端機器人會每 5 分鐘在背景幫您抓取，有房時會直接傳送 Telegram 訊息到您的手機！</p>
           </li>
         </ol>
       </div>

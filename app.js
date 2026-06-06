@@ -12,7 +12,7 @@ const state = {
     peopleCount: 1,
     lastUpdated: "",
     autoMonitor: false,
-    monitorInterval: 30
+    monitorInterval: 5
   },
   hotels: [],         // Full database of Japan hotels
   availability: [],   // Crawled room availability data
@@ -110,20 +110,90 @@ document.addEventListener("DOMContentLoaded", async () => {
       pingDot.className = "ping-dot green";
     }
     
-    // Show refresh button as "Sync Latest Vacancy" on GitHub Pages
-    el.refreshNowBtn.style.display = "flex";
-    el.refreshNowBtn.querySelector("span").textContent = "同步最新空房";
+    // Hide manual sync button since it's fully automated now
+    el.refreshNowBtn.style.display = "none";
     
     // Hide local-only save button
     el.saveConfigBtn.style.display = "none";
     
-    // Configure GitHub Actions manual trigger button link
+    // Configure GitHub Actions manual trigger button & PAT handling
+    const patInput = document.getElementById("github-pat-input");
+    const togglePatBtn = document.getElementById("toggle-pat-visibility");
+    const patGuideLink = document.getElementById("pat-guide-link");
     const githubActionsBtn = document.getElementById("github-actions-btn");
+    
+    if (patInput) {
+      // Load saved PAT
+      patInput.value = localStorage.getItem("github_pat") || "";
+      
+      patInput.addEventListener("input", (e) => {
+        localStorage.setItem("github_pat", e.target.value.trim());
+      });
+    }
+    
+    if (togglePatBtn && patInput) {
+      togglePatBtn.addEventListener("click", () => {
+        if (patInput.type === "password") {
+          patInput.type = "text";
+          togglePatBtn.className = "fa-solid fa-eye";
+        } else {
+          patInput.type = "password";
+          togglePatBtn.className = "fa-solid fa-eye-slash";
+        }
+      });
+    }
+    
+    if (patGuideLink) {
+      patGuideLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        const patGuideMsg = "🔑 如何取得 GitHub 存取權杖 (PAT)：\n\n" +
+          "1. 登入 GitHub，點擊右上角個人頭像 -> 進入 Settings。\n" +
+          "2. 點選左欄最下方的 Developer settings。\n" +
+          "3. 點選 Personal access tokens -> Fine-grained tokens。\n" +
+          "4. 點擊右上角 Generate new token，填寫名稱 (如 toyoko-dashboard)。\n" +
+          "5. Repository access 選擇: Only select repositories -> 選擇您的 toyoko-tracker 儲存庫。\n" +
+          "6. Permissions (權限) 設定：\n" +
+          "   - 點開 Repository permissions -> 將 Contents 與 Actions 都設為「Read and write」權限。\n" +
+          "7. 點擊最下方 Generate token，複製那一串 ghp_ 開頭的權杖代碼貼到此輸入框即可！\n\n" +
+          "(此權杖只會安全地儲存在您的瀏覽器中，不會外流。)";
+        alert(patGuideMsg);
+      });
+    }
+    
     if (githubActionsBtn) {
-      const repoUrl = getGitHubRepoUrl();
-      if (repoUrl) {
-        githubActionsBtn.href = `${repoUrl}/actions`;
-      }
+      githubActionsBtn.style.display = "flex";
+      githubActionsBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        const repoUrl = getGitHubRepoUrl();
+        if (!repoUrl) return;
+        
+        const patValue = patInput ? patInput.value.trim() : "";
+        
+        if (patValue) {
+          // Automatic push config & trigger crawl
+          const updatedConfig = {
+            hotelCode: state.config.hotelCode,
+            hotelName: state.config.hotelName,
+            startDate: el.startDateInput.value,
+            endDate: el.endDateInput.value,
+            roomCount: parseInt(el.roomCountSelect.value),
+            peopleCount: parseInt(el.peopleCountSelect.value),
+            lastUpdated: state.config.lastUpdated || "",
+            autoMonitor: true,
+            monitorInterval: 5
+          };
+          
+          await handleAutoPushAndCrawl(patValue, updatedConfig, repoUrl);
+        } else {
+          // Fallback warning dialog
+          const confirmMsg = "💡 提醒：您目前尚未輸入「GitHub 存取權杖 (PAT)」，因此無法實現一鍵自動修改分店。\n\n" +
+            "如果想切換監測的分店，強烈建議在左側輸入框中貼入您的 GitHub PAT，就能實現一鍵自動切換分店與發起爬網！\n\n" +
+            "是否要現在前往 GitHub Actions 頁面手動發起原本設定分店的爬蟲？";
+          if (confirm(confirmMsg)) {
+            window.open(`${repoUrl}/actions`, "_blank");
+          }
+        }
+      });
     }
     
     if (el.autoMonitorCheckbox) {
@@ -886,7 +956,7 @@ function setupEventListeners() {
       peopleCount: parseInt(el.peopleCountSelect.value),
       lastUpdated: state.config.lastUpdated,
       autoMonitor: el.autoMonitorCheckbox ? el.autoMonitorCheckbox.checked : false,
-      monitorInterval: el.monitorIntervalSelect ? parseInt(el.monitorIntervalSelect.value) : 30
+      monitorInterval: el.monitorIntervalSelect ? parseInt(el.monitorIntervalSelect.value) : 5
     };
     
     try {
@@ -1005,7 +1075,7 @@ function setupEventListeners() {
         peopleCount: parseInt(el.peopleCountSelect.value),
         lastUpdated: state.config.lastUpdated || "",
         autoMonitor: true, // Always enable on GitHub Action cloud monitor
-        monitorInterval: 30 // Runs every 30 minutes
+        monitorInterval: 5 // Runs every 5 minutes
       };
       
       const jsonStr = JSON.stringify(configData, null, 2);
@@ -1097,4 +1167,223 @@ function getGitHubRepoUrl() {
     return `https://github.com/${username}/${repoName}`;
   }
   return null;
+}
+
+// Push updated config.json directly to GitHub repo and trigger crawl workflow
+async function handleAutoPushAndCrawl(pat, config, repoUrl) {
+  const btn = document.getElementById("github-actions-btn");
+  const originalText = btn.innerHTML;
+  
+  // DOM progress elements
+  const progressContainer = el.progressBarContainer;
+  const progressMsg = el.progressStatusMessage;
+  const progressPercent = el.progressPercent;
+  const progressFill = el.progressFill;
+  
+  try {
+    // Disable button and show progress
+    btn.style.pointerEvents = "none";
+    btn.style.opacity = "0.7";
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>正在更新設定...</span>`;
+    
+    // Parse owner and repo
+    const parts = repoUrl.replace("https://github.com/", "").split("/");
+    const owner = parts[0];
+    const repo = parts[1];
+    
+    // Get original timestamp before crawling
+    const originalLastUpdated = state.config.lastUpdated || "";
+    
+    // Step 1: Get SHA of existing config.json
+    const getUrl = `https://api.github.com/repos/${owner}/${repo}/contents/config.json`;
+    const getRes = await fetch(getUrl, {
+      headers: {
+        "Authorization": `token ${pat}`,
+        "Accept": "application/vnd.github.v3+json"
+      }
+    });
+    
+    if (!getRes.ok) {
+      const errText = await getRes.text();
+      throw new Error(`無法讀取 config.json，請確認您的 PAT 權限是否正確及儲存庫名稱。錯誤：${errText}`);
+    }
+    
+    const fileData = await getRes.json();
+    const sha = fileData.sha;
+    
+    // Step 2: Push new config.json
+    // btoa wrapper safe for utf-8
+    const base64Content = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2))));
+    
+    const putRes = await fetch(getUrl, {
+      method: "PUT",
+      headers: {
+        "Authorization": `token ${pat}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        message: `Update config.json to ${config.hotelName} via dashboard UI`,
+        content: base64Content,
+        sha: sha
+      })
+    });
+    
+    if (!putRes.ok) {
+      const errText = await putRes.text();
+      throw new Error(`更新 config.json 失敗！錯誤：${errText}`);
+    }
+    
+    // Step 3: Trigger Workflow Dispatch
+    btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i><span>正在啟動雲端爬蟲...</span>`;
+    
+    const dispatchUrl = `https://api.github.com/repos/${owner}/${repo}/actions/workflows/crawl.yml/dispatches`;
+    
+    // Try main branch first
+    let dispatchRes = await fetch(dispatchUrl, {
+      method: "POST",
+      headers: {
+        "Authorization": `token ${pat}`,
+        "Accept": "application/vnd.github.v3+json"
+      },
+      body: JSON.stringify({ ref: "main" })
+    });
+    
+    // If main fails (e.g. 422 branch not found), try master
+    if (!dispatchRes.ok && dispatchRes.status === 422) {
+      dispatchRes = await fetch(dispatchUrl, {
+        method: "POST",
+        headers: {
+          "Authorization": `token ${pat}`,
+          "Accept": "application/vnd.github.v3+json"
+        },
+        body: JSON.stringify({ ref: "master" })
+      });
+    }
+    
+    if (!dispatchRes.ok) {
+      const errText = await dispatchRes.text();
+      throw new Error(`啟動爬網失敗！請確認工作流設定是否正確。錯誤：${errText}`);
+    }
+    
+    // Show progress bar container and start polling
+    if (progressContainer) {
+      progressContainer.style.display = "block";
+      progressMsg.textContent = "雲端爬蟲已啟動，正在抓取最新房況 (預估 1-2 分鐘)...";
+      progressPercent.textContent = "10%";
+      progressFill.style.width = "10%";
+    }
+    
+    btn.innerHTML = `<i class="fa-solid fa-clock"></i><span>雲端爬網中...</span>`;
+    
+    // Polling parameters
+    let pollAttempts = 0;
+    const maxPollAttempts = 36; // 36 * 5s = 180s (3 minutes)
+    let currentPercent = 10;
+    
+    const pollInterval = setInterval(async () => {
+      pollAttempts++;
+      
+      // Update fake progress to reassure the user
+      if (currentPercent < 85) {
+        currentPercent += 2;
+        if (progressPercent && progressFill) {
+          progressPercent.textContent = `${currentPercent}%`;
+          progressFill.style.width = `${currentPercent}%`;
+        }
+      }
+      
+      try {
+        // Fetch the config.json directly from GitHub API using PAT
+        const pollRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/config.json?t=${Date.now()}`, {
+          headers: {
+            "Authorization": `token ${pat}`,
+            "Accept": "application/vnd.github.v3+json"
+          }
+        });
+        
+        if (pollRes.ok) {
+          const contentData = await pollRes.json();
+          // Decode content
+          const decodedStr = decodeURIComponent(escape(atob(contentData.content.replace(/\s/g, ''))));
+          const remoteConfig = JSON.parse(decodedStr);
+          
+          if (remoteConfig.lastUpdated && remoteConfig.lastUpdated !== originalLastUpdated) {
+            // Success! The background crawler has updated config.json!
+            clearInterval(pollInterval);
+            
+            if (progressMsg) progressMsg.textContent = "雲端爬取完成！正在讀取最新房況資料...";
+            if (progressPercent && progressFill) {
+              progressPercent.textContent = "90%";
+              progressFill.style.width = "90%";
+            }
+            
+            // Fetch the updated availability.json directly from GitHub API
+            const availRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/availability.json?t=${Date.now()}`, {
+              headers: {
+                "Authorization": `token ${pat}`,
+                "Accept": "application/vnd.github.v3+json"
+              }
+            });
+            
+            if (availRes.ok) {
+              const availData = await availRes.json();
+              const availStr = decodeURIComponent(escape(atob(availData.content.replace(/\s/g, ''))));
+              const remoteAvail = JSON.parse(availStr);
+              
+              // Load to state
+              state.config = remoteConfig;
+              state.availability = remoteAvail;
+              
+              // Update UI
+              updateConfigUI();
+              renderCalendars();
+              
+              if (progressMsg) progressMsg.textContent = "自動同步成功！最新房況已載入。";
+              if (progressPercent && progressFill) {
+                progressPercent.textContent = "100%";
+                progressFill.style.width = "100%";
+              }
+              
+              // Hide progress bar after 2.5s
+              setTimeout(() => {
+                if (progressContainer) progressContainer.style.display = "none";
+              }, 2500);
+              
+              alert(`🎉 雲端爬網完成！\n\n已為您自動更新並載入【${remoteConfig.hotelName}】的最新空房走勢！`);
+            } else {
+              throw new Error("無法讀取最新的 availability.json 內容。");
+            }
+            
+            // Restore button
+            btn.style.pointerEvents = "auto";
+            btn.style.opacity = "1";
+            btn.innerHTML = originalText;
+          }
+        }
+      } catch (err) {
+        console.warn("Polling error (will retry):", err);
+      }
+      
+      // Handle timeout
+      if (pollAttempts >= maxPollAttempts) {
+        clearInterval(pollInterval);
+        if (progressContainer) progressContainer.style.display = "none";
+        
+        // Restore button
+        btn.style.pointerEvents = "auto";
+        btn.style.opacity = "1";
+        btn.innerHTML = originalText;
+        
+        alert("⏱️ 自動同步逾時（超過 3 分鐘）。\n\n雲端 Actions 執行時間較長或排隊中。您可以稍候再手動點選右上角的「同步最新空房」按鈕檢查結果。");
+      }
+    }, 5000);
+    
+  } catch (error) {
+    console.error(error);
+    alert(`❌ 發生錯誤：\n${error.message}`);
+    // Restore button
+    btn.style.pointerEvents = "auto";
+    btn.style.opacity = "1";
+    btn.innerHTML = originalText;
+  }
 }
