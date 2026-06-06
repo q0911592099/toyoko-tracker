@@ -1,12 +1,11 @@
-﻿window.toyokoConfig = {
-    "hotelCode":  "00078",
-    "hotelName":  "東橫INN 東京新宿歌舞伎町",
-    "startDate":  "2027-04-08",
-    "endDate":  "2027-07-01",
-    "roomCount":  1,
-    "peopleCount":  1,
-    "lastUpdated":  "2026-06-06 11:48:17",
-    "autoMonitor":  false,
-    "monitorInterval":  30
-}
-;
+window.toyokoConfig = {
+  "hotelCode": "00368",
+  "hotelName": "東橫INN 東京三之輪站",
+  "startDate": "2027-04-08",
+  "endDate": "2027-07-01",
+  "roomCount": 1,
+  "peopleCount": 1,
+  "lastUpdated": "2026-06-06 05:07:53",
+  "autoMonitor": true,
+  "monitorInterval": 5
+};
