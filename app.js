@@ -1163,7 +1163,8 @@ function getGitHubRepoUrl() {
   if (hostname.endsWith('github.io')) {
     const username = hostname.split('.')[0];
     const pathParts = pathname.split('/').filter(Boolean);
-    const repoName = pathParts[0] || 'toyoko-tracker';
+    // If path is empty (e.g. root domain), the repo name is username.github.io
+    const repoName = pathParts[0] || `${username}.github.io`;
     return `https://github.com/${username}/${repoName}`;
   }
   return null;
@@ -1205,7 +1206,7 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     
     if (!getRes.ok) {
       const errText = await getRes.text();
-      throw new Error(`無法讀取 config.json，請確認您的 PAT 權限是否正確及儲存庫名稱。錯誤：${errText}`);
+      throw new Error(`無法讀取 config.json，請確認您的 PAT 權限是否正確及儲存庫名稱【${owner}/${repo}】。錯誤：${errText}`);
     }
     
     const fileData = await getRes.json();
@@ -1230,7 +1231,7 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     
     if (!putRes.ok) {
       const errText = await putRes.text();
-      throw new Error(`更新 config.json 失敗！錯誤：${errText}`);
+      throw new Error(`更新 config.json 失敗！目標儲存庫：【${owner}/${repo}】。錯誤：${errText}`);
     }
     
     // Step 3: Trigger Workflow Dispatch
@@ -1262,7 +1263,7 @@ async function handleAutoPushAndCrawl(pat, config, repoUrl) {
     
     if (!dispatchRes.ok) {
       const errText = await dispatchRes.text();
-      throw new Error(`啟動爬網失敗！請確認工作流設定是否正確。錯誤：${errText}`);
+      throw new Error(`啟動爬網失敗！請確認工作流設定是否正確，且工作流檔案已存在於【${owner}/${repo}】專案中。錯誤：${errText}`);
     }
     
     // Show progress bar container and start polling
