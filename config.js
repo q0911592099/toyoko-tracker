@@ -8,4 +8,5 @@
     "lastUpdated":  "2026-06-06 11:48:17",
     "autoMonitor":  false,
     "monitorInterval":  30
-};
+}
+;
