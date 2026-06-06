@@ -60,6 +60,11 @@ async function run() {
   }
   const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
 
+  if (config.autoMonitor === false) {
+    console.log('[Monitor] Cloud monitoring is currently disabled. Skipping crawl.');
+    process.exit(0);
+  }
+
   const startDate = new Date(config.startDate);
   const endDate = new Date(config.endDate);
 
@@ -260,10 +265,14 @@ async function run() {
                     `<b>新增日期：</b><code>${dateListStr}</code>${minPriceText}\n\n` +
                     `<a href="https://www.toyoko-inn.com/china/search/result/room_plan?hotel=${config.hotelCode}&start=${addedDates[0]}">立即前往訂房 ↗</a>`;
     
-    // Telegram credentials from Environment Variables (GitHub Secrets)
-    const tgToken = process.env.TELEGRAM_BOT_TOKEN;
-    const tgChatId = process.env.TELEGRAM_CHAT_ID;
-    await sendTelegramNotification(tgToken, tgChatId, message);
+    // Telegram credentials from Environment Variables (GitHub Secrets) or config.json
+    const tgToken = process.env.TELEGRAM_BOT_TOKEN || config.telegramBotToken;
+    const tgChatId = process.env.TELEGRAM_CHAT_ID || config.telegramChatId;
+    if (config.telegramNotify) {
+      await sendTelegramNotification(tgToken, tgChatId, message);
+    } else {
+      console.log('[Notification] Telegram notifications are disabled in configuration.');
+    }
   } else {
     console.log('[Notification] No new vacant dates detected. Notification omitted.');
   }

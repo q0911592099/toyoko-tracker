@@ -23,7 +23,10 @@ if (-not (Test-Path $configFile)) {
         peopleCount = 1
         lastUpdated = ""
         autoMonitor = $false
-        monitorInterval = 30
+        telegramNotify = $false
+        telegramBotToken = ""
+        telegramChatId = ""
+        monitorInterval = 5
     }
     $defaultConfig | ConvertTo-Json | Out-File -FilePath $configFile -Encoding utf8
 }
@@ -127,6 +130,33 @@ function Send-Notification {
     }
 }
 
+function Send-TelegramNotification {
+    param(
+        [string]$Token,
+        [string]$ChatId,
+        [string]$Message
+    )
+    if ([string]::IsNullOrEmpty($Token) -or [string]::IsNullOrEmpty($ChatId)) {
+        Write-Host "[Notification] Missing Telegram Bot Token or Chat ID. Skipping Telegram push." -ForegroundColor Yellow
+        return
+    }
+    
+    $url = "https://api.telegram.org/bot$Token/sendMessage"
+    $body = @{
+        chat_id = $ChatId
+        text = $Message
+        parse_mode = "HTML"
+        disable_web_page_preview = $true
+    } | ConvertTo-Json -Compress
+    
+    try {
+        $response = Invoke-RestMethod -Uri $url -Method Post -Body $body -ContentType "application/json; charset=utf-8" -TimeoutSec 10
+        Write-Host "[Notification] Telegram push notification sent successfully!" -ForegroundColor Green
+    } catch {
+        Write-Warning "Failed to send Telegram notification: $_"
+    }
+}
+
 function Check-VacanciesAndNotify {
     param($Config)
     
@@ -184,6 +214,20 @@ function Check-VacanciesAndNotify {
                 }
                 
                 Send-Notification -Title $title -Message $msg
+
+                # Trigger Telegram notification if enabled
+                if ($Config.telegramNotify -eq $true) {
+                    $tgToken = $Config.telegramBotToken
+                    $tgChatId = $Config.telegramChatId
+                    
+                    $tgMsg = "<b>🔔 東橫INN 發現空房！</b>`n`n" +
+                             "<b>飯店：</b>$hotelName`n" +
+                             "<b>新增空房：</b>$addedCount 天`n" +
+                             "<b>新增日期：</b><code>$($addedDates -join ', ')</code>$priceText`n`n" +
+                             "<a href='https://www.toyoko-inn.com/china/search/result/room_plan?hotel=$($Config.hotelCode)&amp;start=$($addedDates[0])'>立即前往訂房 ↗</a>"
+                    
+                    Send-TelegramNotification -Token $tgToken -ChatId $tgChatId -Message $tgMsg
+                }
             }
         } catch {
             Write-Warning "Error checking vacancies: $_"
@@ -628,4 +672,5 @@ while ($Listener.IsListening) {
         }
     }
 }
+
 

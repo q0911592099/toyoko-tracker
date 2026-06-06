@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#6366f1">
-  <title>東橫INN 空房智慧監測中心</title>
+  <title>東橫INN空房查詢</title>
   
   <link rel="manifest" href="./manifest.json">
   <link rel="apple-touch-icon" href="./icon-192.png">
@@ -37,7 +37,7 @@
           <i class="fa-solid fa-hotel"></i>
         </div>
         <div class="brand-info">
-          <h1>Toyoko Tracker</h1>
+          <h1>東橫INN空房查詢</h1>
           <span class="version">v1.2.0 (Local)</span>
         </div>
       </div>
@@ -116,12 +116,46 @@
             </select>
           </div>
 
+          <!-- Telegram 通知設定 -->
+          <div class="settings-group">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="telegram-notify-checkbox">
+              <span class="checkmark"></span>
+              <span>啟用 Telegram 通知功能</span>
+            </label>
+          </div>
+
+          <div class="settings-group" id="telegram-config-group" style="display: none;">
+            <label for="telegram-bot-token-input">Telegram Bot Token</label>
+            <input type="text" id="telegram-bot-token-input" placeholder="例如: 123456:ABC-def..." autocomplete="off">
+            <label for="telegram-chat-id-input" style="margin-top: 8px;">Telegram Chat ID</label>
+            <input type="text" id="telegram-chat-id-input" placeholder="例如: 987654321" autocomplete="off">
+          </div>
+
           <button id="save-config-btn" class="btn btn-primary">
             <i class="fa-solid fa-floppy-disk"></i>
             <span>儲存並重啟監測</span>
           </button>
 
           <div id="github-controls" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <!-- 啟動雲端監測選項 -->
+            <div class="settings-group" style="margin-top: 5px; margin-bottom: 0;">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="cloud-monitor-checkbox">
+                <span class="checkmark"></span>
+                <span style="font-size: 0.85rem; font-weight: 600;">啟動雲端監測 (每 5 分鐘)</span>
+              </label>
+            </div>
+            
+            <!-- 啟動 Telegram 通知選項 -->
+            <div class="settings-group" style="margin-bottom: 5px;">
+              <label class="custom-checkbox">
+                <input type="checkbox" id="cloud-telegram-checkbox">
+                <span class="checkmark"></span>
+                <span style="font-size: 0.85rem; font-weight: 600;">啟動 Telegram 通知</span>
+              </label>
+            </div>
+
             <!-- 自動更新設定按鈕移到原本權杖的位置 -->
             <a id="github-actions-btn" href="#" target="_blank" class="btn btn-github" style="text-decoration: none; justify-content: center; width: 100%; display: none;">
               <i class="fa-brands fa-github"></i>
@@ -359,6 +393,29 @@
           </li>
         </ol>
       </div>
+    </div>
+  </div>
+
+  <!-- Crawl Progress Overlay Modal -->
+  <div id="crawl-overlay" class="modal-overlay" style="display: none; z-index: 2000;">
+    <div class="modal-content glass" style="max-width: 400px; text-align: center; padding: 40px 30px; border-radius: var(--radius-md);">
+      <div style="margin-bottom: 20px;">
+        <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 3rem; color: var(--color-primary);"></i>
+      </div>
+      <h3 style="font-family: var(--font-display); font-size: 1.3rem; margin-bottom: 10px; color: var(--color-text-primary);">正在抓取空房資料</h3>
+      <p id="overlay-status-message" style="font-size: 0.9rem; color: var(--color-text-secondary); margin-bottom: 20px;">正在初始化爬蟲...</p>
+      
+      <!-- Progress Bar -->
+      <div class="progress-track" style="margin-bottom: 25px; height: 8px;">
+        <div id="overlay-progress-fill" class="progress-fill" style="width: 0%;"></div>
+      </div>
+      
+      <div id="overlay-progress-percent" style="font-size: 1.5rem; font-weight: 800; color: var(--color-primary); margin-bottom: 25px;">0%</div>
+      
+      <button id="overlay-stop-btn" class="btn btn-danger btn-block" style="justify-content: center;">
+        <i class="fa-solid fa-circle-stop"></i>
+        <span>停止查詢</span>
+      </button>
     </div>
   </div>
 

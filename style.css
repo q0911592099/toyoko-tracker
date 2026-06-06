@@ -121,6 +121,9 @@ body {
 input, select, button {
   font-family: inherit;
   color: inherit;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 /* Scrollbar Styles */
@@ -374,8 +377,12 @@ input, select, button {
 }
 
 .settings-card input[type="date"],
+.settings-card input[type="text"],
 .settings-card select {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   padding: 10px 12px;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
@@ -386,6 +393,7 @@ input, select, button {
 }
 
 .settings-card input[type="date"]:focus,
+.settings-card input[type="text"]:focus,
 .settings-card select:focus {
   outline: none;
   border-color: var(--color-primary);
@@ -1318,19 +1326,53 @@ input, select, button {
    8. RESPONSIVE MEDIA QUERIES
    ========================================== */
 @media (max-width: 1200px) {
+  html, body {
+    height: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+  }
   .app-container {
     flex-direction: column;
-    overflow-y: auto;
+    overflow: visible;
     height: auto;
+    width: 100%;
   }
   .sidebar {
     width: 100%;
+    max-width: 100%;
     height: auto;
     border-right: none;
     border-bottom: 1px solid var(--border-color);
   }
+  .sidebar-content {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    padding: 20px;
+  }
+  .settings-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .settings-group {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
   .main-workspace {
     height: auto;
+    overflow: visible;
+  }
+  .top-header {
+    padding: 20px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .filters-bar {
+    padding: 20px;
+    gap: 15px;
   }
   .dashboard-grid {
     flex-direction: column;
@@ -1341,10 +1383,38 @@ input, select, button {
     border-right: none;
     border-bottom: 1px solid var(--border-color);
     overflow-y: visible;
+    padding: 20px 15px;
   }
   .detail-section {
     width: 100%;
     overflow-y: visible;
+    padding: 20px 15px;
+  }
+  .calendars-scroll-grid {
+    gap: 24px;
+    padding-bottom: 20px;
+  }
+  .month-calendar {
+    padding: 16px 12px;
+  }
+  .calendar-grid {
+    gap: 4px;
+  }
+  .calendar-day {
+    padding: 4px;
+  }
+  .day-number {
+    font-size: 0.8rem;
+  }
+  .day-price {
+    font-size: 0.6rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .settings-row {
+    flex-direction: column;
+    gap: 12px;
   }
 }
 

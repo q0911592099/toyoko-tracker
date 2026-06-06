@@ -12,6 +12,9 @@ const state = {
     peopleCount: 1,
     lastUpdated: "",
     autoMonitor: false,
+    telegramNotify: false,
+    telegramBotToken: "",
+    telegramChatId: "",
     monitorInterval: 5
   },
   hotels: [],         // Full database of Japan hotels
@@ -74,6 +77,15 @@ const el = {
   autoMonitorCheckbox: document.getElementById("auto-monitor-checkbox"),
   monitorIntervalGroup: document.getElementById("monitor-interval-group"),
   monitorIntervalSelect: document.getElementById("monitor-interval-select"),
+  telegramNotifyCheckbox: document.getElementById("telegram-notify-checkbox"),
+  telegramConfigGroup: document.getElementById("telegram-config-group"),
+  telegramBotTokenInput: document.getElementById("telegram-bot-token-input"),
+  telegramChatIdInput: document.getElementById("telegram-chat-id-input"),
+  crawlOverlay: document.getElementById("crawl-overlay"),
+  overlayStatusMessage: document.getElementById("overlay-status-message"),
+  overlayProgressFill: document.getElementById("overlay-progress-fill"),
+  overlayProgressPercent: document.getElementById("overlay-progress-percent"),
+  overlayStopBtn: document.getElementById("overlay-stop-btn"),
   githubControls: document.getElementById("github-controls"),
   downloadConfigBtn: document.getElementById("download-config-btn"),
   showDeployGuideBtn: document.getElementById("show-deploy-guide-btn"),
@@ -108,6 +120,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (statusText && pingDot) {
       statusText.textContent = "GitHub 雲端監測 (24h 自動)";
       pingDot.className = "ping-dot green";
+    }
+    
+    // Add password verification for Cloud Monitor and TG notifications
+    const cloudMonitorCb = document.getElementById("cloud-monitor-checkbox");
+    const cloudTelegramCb = document.getElementById("cloud-telegram-checkbox");
+    
+    if (cloudMonitorCb) {
+      cloudMonitorCb.addEventListener("change", (e) => {
+        if (cloudMonitorCb.checked) {
+          const password = prompt("請輸入管理員密碼以啟用雲端監測功能：");
+          if (password !== "Aa123456") {
+            alert("密碼錯誤，無法開啟此功能！");
+            cloudMonitorCb.checked = false;
+          }
+        }
+      });
+    }
+    
+    if (cloudTelegramCb) {
+      cloudTelegramCb.addEventListener("change", (e) => {
+        if (cloudTelegramCb.checked) {
+          const password = prompt("請輸入管理員密碼以啟用 Telegram 通知功能：");
+          if (password !== "Aa123456") {
+            alert("密碼錯誤，無法開啟此功能！");
+            cloudTelegramCb.checked = false;
+          }
+        }
+      });
     }
     
     // Hide manual sync button since it's fully automated now
@@ -173,6 +213,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         const patValue = tokenPart1 + tokenPart2;
         
         if (patValue) {
+          const cloudMonitorCb = document.getElementById("cloud-monitor-checkbox");
+          const cloudTelegramCb = document.getElementById("cloud-telegram-checkbox");
+
           // Automatic push config & trigger crawl
           const updatedConfig = {
             hotelCode: state.config.hotelCode,
@@ -182,7 +225,8 @@ document.addEventListener("DOMContentLoaded", async () => {
             roomCount: parseInt(el.roomCountSelect.value),
             peopleCount: parseInt(el.peopleCountSelect.value),
             lastUpdated: state.config.lastUpdated || "",
-            autoMonitor: true,
+            autoMonitor: cloudMonitorCb ? cloudMonitorCb.checked : false,
+            telegramNotify: cloudTelegramCb ? cloudTelegramCb.checked : false,
             monitorInterval: 5
           };
           
@@ -315,6 +359,24 @@ function updateConfigUI() {
   if (el.autoMonitorCheckbox) {
     el.autoMonitorCheckbox.checked = !!state.config.autoMonitor;
     el.monitorIntervalGroup.style.display = state.config.autoMonitor ? "block" : "none";
+  }
+  if (el.telegramNotifyCheckbox) {
+    el.telegramNotifyCheckbox.checked = !!state.config.telegramNotify;
+    el.telegramConfigGroup.style.display = state.config.telegramNotify ? "block" : "none";
+  }
+  if (el.telegramBotTokenInput && state.config.telegramBotToken) {
+    el.telegramBotTokenInput.value = state.config.telegramBotToken;
+  }
+  if (el.telegramChatIdInput && state.config.telegramChatId) {
+    el.telegramChatIdInput.value = state.config.telegramChatId;
+  }
+  const cloudMonitorCb = document.getElementById("cloud-monitor-checkbox");
+  const cloudTelegramCb = document.getElementById("cloud-telegram-checkbox");
+  if (cloudMonitorCb) {
+    cloudMonitorCb.checked = !!state.config.autoMonitor;
+  }
+  if (cloudTelegramCb) {
+    cloudTelegramCb.checked = !!state.config.telegramNotify;
   }
   if (el.monitorIntervalSelect && state.config.monitorInterval) {
     el.monitorIntervalSelect.value = state.config.monitorInterval.toString();
@@ -504,9 +566,22 @@ function updateCrawlerUI(status) {
     el.stopCrawlBtn.style.display = "flex";
     el.progressBarContainer.style.display = "block";
     
-    el.progressStatusMessage.textContent = status.message || "正在查詢...";
-    el.progressPercent.textContent = `${status.progress}%`;
-    el.progressFill.style.width = `${status.progress}%`;
+    // Show Crawl Overlay
+    if (el.crawlOverlay) {
+      el.crawlOverlay.style.display = "flex";
+      el.crawlOverlay.style.opacity = "1";
+    }
+    
+    const msg = status.message || "正在查詢...";
+    const percent = `${status.progress}%`;
+    
+    el.progressStatusMessage.textContent = msg;
+    el.progressPercent.textContent = percent;
+    el.progressFill.style.width = percent;
+    
+    if (el.overlayStatusMessage) el.overlayStatusMessage.textContent = msg;
+    if (el.overlayProgressPercent) el.overlayProgressPercent.textContent = percent;
+    if (el.overlayProgressFill) el.overlayProgressFill.style.width = percent;
     
     // Incrementally reload availability data during crawl so user sees results live!
     if (status.progress > 0 && status.progress % 5 === 0) {
@@ -537,6 +612,11 @@ function updateCrawlerUI(status) {
     el.refreshNowBtn.style.display = "flex";
     el.stopCrawlBtn.style.display = "none";
     el.progressBarContainer.style.display = "none";
+    
+    // Hide Crawl Overlay
+    if (el.crawlOverlay) {
+      el.crawlOverlay.style.display = "none";
+    }
   }
 }
 
@@ -959,6 +1039,9 @@ function setupEventListeners() {
       peopleCount: parseInt(el.peopleCountSelect.value),
       lastUpdated: state.config.lastUpdated,
       autoMonitor: el.autoMonitorCheckbox ? el.autoMonitorCheckbox.checked : false,
+      telegramNotify: el.telegramNotifyCheckbox ? el.telegramNotifyCheckbox.checked : false,
+      telegramBotToken: el.telegramBotTokenInput ? el.telegramBotTokenInput.value.trim() : "",
+      telegramChatId: el.telegramChatIdInput ? el.telegramChatIdInput.value.trim() : "",
       monitorInterval: el.monitorIntervalSelect ? parseInt(el.monitorIntervalSelect.value) : 5
     };
     
@@ -1077,7 +1160,8 @@ function setupEventListeners() {
         roomCount: parseInt(el.roomCountSelect.value),
         peopleCount: parseInt(el.peopleCountSelect.value),
         lastUpdated: state.config.lastUpdated || "",
-        autoMonitor: true, // Always enable on GitHub Action cloud monitor
+        autoMonitor: cloudMonitorCb ? cloudMonitorCb.checked : false,
+        telegramNotify: cloudTelegramCb ? cloudTelegramCb.checked : false,
         monitorInterval: 5 // Runs every 5 minutes
       };
       
@@ -1120,9 +1204,47 @@ function setupEventListeners() {
   // Auto monitor checkbox toggle visibility
   if (el.autoMonitorCheckbox) {
     el.autoMonitorCheckbox.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        const password = prompt("請輸入管理員密碼以啟用自動背景監測功能：");
+        if (password !== "Aa123456") {
+          alert("密碼錯誤，無法開啟此功能！");
+          e.target.checked = false;
+        }
+      }
       el.monitorIntervalGroup.style.display = e.target.checked ? "block" : "none";
       if (e.target.checked) {
         checkAndRequestNotificationPermission();
+      }
+    });
+  }
+
+  // Telegram notify checkbox toggle visibility
+  if (el.telegramNotifyCheckbox) {
+    el.telegramNotifyCheckbox.addEventListener("change", (e) => {
+      if (e.target.checked) {
+        const password = prompt("請輸入管理員密碼以啟用 Telegram 通知功能：");
+        if (password !== "Aa123456") {
+          alert("密碼錯誤，無法開啟此功能！");
+          e.target.checked = false;
+        }
+      }
+      el.telegramConfigGroup.style.display = e.target.checked ? "block" : "none";
+    });
+  }
+
+  // Stop button in crawling progress overlay
+  if (el.overlayStopBtn) {
+    el.overlayStopBtn.addEventListener("click", async () => {
+      try {
+        const response = await fetch("/api/stop", { method: "POST" });
+        if (response.ok) {
+          if (el.overlayStatusMessage) {
+            el.overlayStatusMessage.textContent = "正在發送終止訊號...";
+          }
+          el.progressStatusMessage.textContent = "正在發送終止訊號...";
+        }
+      } catch (e) {
+        console.error(e);
       }
     });
   }

@@ -56,7 +56,7 @@ foreach ($file in $filesToUpload) {
 
     # Check if file exists on GitHub to get SHA
     $sha = $null
-    $getUrl = "https://api.github.com/repos/$username/$repo/contents/$githubPath"
+    $getUrl = "https://api.github.com/repos/$username/$repo/contents/$githubPath?t=" + [DateTime]::UtcNow.Ticks
     
     $headers = @{
         "Authorization" = "token $pat"
