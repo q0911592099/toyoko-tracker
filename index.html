@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#6366f1">
+  <title>東橫INN 空房智慧監測中心</title>
+  
+  <link rel="manifest" href="./manifest.json">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+  
+  <!-- Google Fonts: Outfit, Inter, Noto Sans TC -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <!-- Local data script loaders (fallback for direct file:// opening) -->
+  <script src="./config.js" defer></script>
+  <script src="./data.js" defer></script>
+  <script src="./hotels_db.js" defer></script>
+  
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="./style.css">
+  
+  <!-- FontAwesome Icons (loaded via CDN) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+  <!-- App Shell -->
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation & Config -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <i class="fa-solid fa-hotel"></i>
+        </div>
+        <div class="brand-info">
+          <h1>Toyoko Tracker</h1>
+          <span class="version">v1.2.0 (Local)</span>
+        </div>
+      </div>
+
+      <!-- Search Settings Card -->
+      <div class="sidebar-content">
+        <div class="settings-card">
+          <div class="card-header">
+            <i class="fa-solid fa-sliders"></i>
+            <h2>查詢設定</h2>
+          </div>
+          
+          <div class="settings-group">
+            <!-- Hotel Selector -->
+            <label for="hotel-search-input">監測分店</label>
+            <div class="hotel-search-container">
+              <div class="input-with-icon">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="hotel-search-input" placeholder="輸入關鍵字 (如: 新宿, 池袋)..." autocomplete="off">
+                <i class="fa-solid fa-circle-xmark clear-icon" id="clear-hotel-search" style="display:none;"></i>
+              </div>
+              <!-- Autocomplete dropdown list -->
+              <div id="hotel-dropdown-list" class="autocomplete-dropdown" style="display:none;"></div>
+            </div>
+            <div id="selected-hotel-display" class="selected-hotel-badge">
+              <span class="hotel-name">東橫INN 東京新宿歌舞伎町</span>
+              <span class="hotel-code">00078</span>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <label for="start-date-input">起始日期</label>
+            <input type="date" id="start-date-input" min="2026-06-06">
+          </div>
+          <div class="settings-group">
+            <label for="end-date-input">結束日期</label>
+            <input type="date" id="end-date-input" min="2026-06-06">
+          </div>
+
+          <div class="settings-row">
+            <div class="settings-group">
+              <label for="room-count-select">房間數量</label>
+              <select id="room-count-select">
+                <option value="1" selected>1 間房</option>
+                <option value="2">2 間房</option>
+                <option value="3">3 間房</option>
+              </select>
+            </div>
+            <div class="settings-group">
+              <label for="people-count-select">入住人數</label>
+              <select id="people-count-select">
+                <option value="1" selected>1 人 / 房</option>
+                <option value="2">2 人 / 房</option>
+                <option value="3">3 人 / 房</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="auto-monitor-checkbox">
+              <span class="checkmark"></span>
+              <span>啟用自動背景監測 (定時查詢)</span>
+            </label>
+          </div>
+
+          <div class="settings-group" id="monitor-interval-group" style="display: none;">
+            <label for="monitor-interval-select">監測頻率</label>
+            <select id="monitor-interval-select">
+              <option value="10">每 10 分鐘</option>
+              <option value="30" selected>每 30 分鐘</option>
+              <option value="60">每 1 小時</option>
+              <option value="120">每 2 小時</option>
+              <option value="240">每 4 小時</option>
+            </select>
+          </div>
+
+          <button id="save-config-btn" class="btn btn-primary">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span>儲存並重啟監測</span>
+          </button>
+
+          <div id="github-controls" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;">
+            <button id="download-config-btn" class="btn btn-accent btn-block">
+              <i class="fa-solid fa-download"></i>
+              <span>下載雲端設定檔 (config.json)</span>
+            </button>
+            <button id="show-deploy-guide-btn" class="btn btn-primary btn-block" style="background: var(--color-primary);">
+              <i class="fa-solid fa-book-open"></i>
+              <span>GitHub 部署說明指引</span>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Legend Box -->
+        <div class="legend-card">
+          <h3>狀態圖例</h3>
+          <div class="legend-list">
+            <div class="legend-item">
+              <span class="legend-color color-available"></span>
+              <span>有空房 (綠色閃爍)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color color-full"></span>
+              <span>無空房 (紅色)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color color-loading"></span>
+              <span>爬取中 (橙色脈衝)</span>
+            </div>
+            <div class="legend-item">
+              <span class="legend-color color-unchecked"></span>
+              <span>未查詢 / 範圍外 (灰色)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Theme Switcher & Status -->
+      <div class="sidebar-footer">
+        <div class="theme-toggle">
+          <button id="theme-btn-dark"><i class="fa-solid fa-moon"></i> 暗色</button>
+          <button id="theme-btn-light" class="active"><i class="fa-solid fa-sun"></i> 亮色</button>
+        </div>
+        <div class="connection-status">
+          <span class="ping-dot green"></span>
+          <span class="status-text">伺服器已連線</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main class="main-workspace">
+      
+      <!-- Top Status Header -->
+      <header class="top-header">
+        <div class="header-left">
+          <h2 id="dashboard-title">東橫INN 東京新宿歌舞伎町</h2>
+          <p class="header-subtitle">
+            <span id="date-range-display">2027-04-08 至 2027-07-01</span>
+            <span class="separator">|</span>
+            <span>最後更新: <span id="last-updated-display">尚未查詢</span></span>
+          </p>
+        </div>
+        
+        <div class="header-right">
+          <!-- Refresh controls -->
+          <div class="action-buttons">
+            <button id="refresh-now-btn" class="btn btn-accent">
+              <i class="fa-solid fa-rotate"></i>
+              <span>立即更新空房</span>
+            </button>
+            <button id="stop-crawl-btn" class="btn btn-danger" style="display:none;">
+              <i class="fa-solid fa-circle-stop"></i>
+              <span>停止查詢</span>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Progress Overlay Panel (Shows when crawling) -->
+      <div id="crawler-progress-bar-container" class="progress-bar-container" style="display:none;">
+        <div class="progress-bar-header">
+          <div class="progress-status">
+            <i class="fa-solid fa-circle-notch fa-spin status-spinner"></i>
+            <span id="crawler-status-message">正在初始化爬蟲...</span>
+          </div>
+          <span id="crawler-progress-percent" class="progress-percent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="crawler-progress-fill" class="progress-fill" style="width: 0%;"></div>
+        </div>
+      </div>
+
+      <!-- Filters Panel -->
+      <div class="filters-bar">
+        <div class="filter-item">
+          <label for="filter-room-type"><i class="fa-solid fa-bed"></i> 房型篩選</label>
+          <select id="filter-room-type">
+            <option value="all">所有房型</option>
+            <option value="single">單人房 (Single)</option>
+            <option value="double">雙人房 (Double / Twin)</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label for="filter-smoking"><i class="fa-solid fa-ban-smoking"></i> 菸味種類</label>
+          <select id="filter-smoking">
+            <option value="all">所有房型</option>
+            <option value="non-smoking">禁菸房 Only</option>
+            <option value="smoking">吸菸房 Only</option>
+          </select>
+        </div>
+
+        <div class="filter-item">
+          <label><i class="fa-solid fa-filter"></i> 快速過濾</label>
+          <div class="checkbox-group">
+            <label class="custom-checkbox">
+              <input type="checkbox" id="filter-only-vacant" checked>
+              <span class="checkmark"></span>
+              <span>只顯示有空房</span>
+            </label>
+          </div>
+        </div>
+        
+        <div class="filter-item flex-grow">
+          <label for="filter-price-range"><i class="fa-solid fa-yen-sign"></i> 最高房價 (含稅): <span id="price-limit-display">15,000 日圓</span></label>
+          <div class="range-slider-wrap">
+            <input type="range" id="filter-price-range" min="5000" max="30000" step="500" value="20000">
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Board Content -->
+      <div class="dashboard-grid">
+        
+        <!-- Left Side: Heatmap Calendar Panel -->
+        <section class="calendar-section">
+          <div class="section-header">
+            <h3>空房走勢日曆 (April 2027 - July 2027)</h3>
+            <div class="summary-stats">
+              <span class="badge badge-success">有空房天數: <strong id="total-available-days">0</strong> 天</span>
+              <span class="badge badge-danger">客滿天數: <strong id="total-full-days">0</strong> 天</span>
+            </div>
+          </div>
+          
+          <div id="calendars-container" class="calendars-scroll-grid">
+            <!-- Dynamically populated monthly calendars will be inserted here -->
+            <div class="skeleton-placeholder">
+              <i class="fa-solid fa-circle-notch fa-spin"></i>
+              <p>正在加載日曆走勢，請稍候...</p>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Right Side: Date Detail Panel -->
+        <section class="detail-section">
+          <div class="detail-card glass">
+            
+            <div id="detail-header-empty" class="detail-empty-state">
+              <i class="fa-regular fa-calendar-check"></i>
+              <h4>請點擊日曆中的日期</h4>
+              <p>點選任一日期，即可在此面板查看詳細房型種類、剩餘空房數量、房價方案以及直接訂房的連結。</p>
+            </div>
+            
+            <div id="detail-content" style="display:none;">
+              <div class="detail-card-header">
+                <div class="detail-date-title">
+                  <h3 id="selected-detail-date">2027-04-08</h3>
+                  <span id="selected-detail-weekday" class="weekday-badge">星期四</span>
+                </div>
+                <div class="detail-hotel-badge" id="selected-detail-hotel">
+                  東橫INN 新宿歌舞伎町
+                </div>
+              </div>
+
+              <!-- Available Room List -->
+              <div class="room-list-container">
+                <h4>當日房型清單</h4>
+                <div id="detail-rooms-list" class="rooms-list">
+                  <!-- Dynamically populated room type cards -->
+                </div>
+              </div>
+
+              <!-- Action buttons inside details panel -->
+              <div class="detail-actions">
+                <a id="direct-booking-link" href="#" target="_blank" class="btn btn-primary btn-block">
+                  <i class="fa-solid fa-external-link"></i>
+                  <span>前往東橫INN官網預訂此日</span>
+                </a>
+              </div>
+            </div>
+            
+          </div>
+        </section>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- GitHub Deployment Guide Modal -->
+  <div id="deploy-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3><i class="fa-solid fa-cloud-arrow-up"></i> GitHub 雲端部署指引說明</h3>
+        <button id="close-modal-btn" class="modal-close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <ol class="guide-steps">
+          <li>
+            <strong>第一步：註冊 GitHub 並建立儲存庫 (Repository)</strong>
+            <p>前往 <a href="https://github.com/" target="_blank">GitHub 官網</a> 註冊帳號，然後建立一個全新的「公開 (Public)」儲存庫，命名為 <code>toyoko-tracker</code>。</p>
+          </li>
+          <li>
+            <strong>第二步：上傳專案檔案</strong>
+            <p>將目前資料夾中的所有程式檔案（包含 <code>index.html</code>, <code>style.css</code>, <code>app.js</code>, <code>crawl.js</code>, <code>manifest.json</code>, <code>sw.js</code>, <code>config.json</code>, <code>availability.json</code>...等）上傳到您剛建立的 GitHub 儲存庫中。（<code>.bat</code> 檔可不上傳）</p>
+          </li>
+          <li>
+            <strong>第三步：建立 Telegram 機器人取得 Bot Token</strong>
+            <p>在 Telegram 中搜尋並與官方的 <code>@BotFather</code> 開始對話，輸入指令 <code>/newbot</code>。按照指示為您的機器人命名並設定使用者名稱，成功後 <code>@BotFather</code> 會提供一串 **API Token**（例如：<code>123456:ABC-def...</code>），請複製下來。</p>
+          </li>
+          <li>
+            <strong>第四步：取得您的 Telegram 個人 Chat ID</strong>
+            <p>在 Telegram 中搜尋並與 <code>@userinfobot</code> 或 <code>@GetIDsBot</code> 開始對話，發送任何訊息給它，它會立刻回覆您的個人 **Id** 數字（例如：<code>987654321</code>），這就是您的 Chat ID，請複製下來。</p>
+          </li>
+          <li>
+            <strong>第五步：在 GitHub 中設定加密 Secrets</strong>
+            <p>在您的 GitHub 專案頁面中，點擊上排的 <strong>Settings</strong> -> 點選左欄 <strong>Secrets and variables</strong> 中的 <strong>Actions</strong> -> 點擊 <strong>New repository secret</strong>，建立以下兩個 Secrets：
+              <br>1. 名稱：<code>TELEGRAM_BOT_TOKEN</code>，內容：貼上您的 Bot Token。
+              <br>2. 名稱：<code>TELEGRAM_CHAT_ID</code>，內容：貼上您的個人 Chat ID 數字。
+            </p>
+          </li>
+          <li>
+            <strong>第六步：開啟 GitHub Pages 靜態網站網頁</strong>
+            <p>在 <strong>Settings</strong> 頁面點擊左側的 <strong>Pages</strong> -> 將 Build and deployment 來源設為 <strong>Deploy from a branch</strong> -> Branch 選擇 <strong>main</strong>，目錄選擇 <strong>/ (root)</strong> -> 點擊 <strong>Save</strong>。</p>
+          </li>
+          <li>
+            <strong>大功告成！</strong>
+            <p>大約 1 分鐘後，您的網站將部署在 <code>https://[您的GitHub帳號].github.io/toyoko-tracker/</code>！雲端機器人會每 30 分鐘在背景幫您抓取，有房時會直接傳送 Telegram 訊息到您的手機！</p>
+          </li>
+        </ol>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Tooltip -->
+  <div id="calendar-tooltip" class="calendar-tooltip" style="display: none;"></div>
+
+  <!-- Scripts -->
+  <script src="./app.js"></script>
+</body>
+</html>

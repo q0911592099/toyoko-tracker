@@ -1,0 +1,308 @@
+﻿[
+    {
+        "hotelCode":  "00019",
+        "name":  "東橫INN 東京東西線西葛西",
+        "prefecture":  13,
+        "address":  "5-11-12 Nishikasai"
+    },
+    {
+        "hotelCode":  "00341",
+        "name":  "東橫INN 東京東西線木場站",
+        "prefecture":  13,
+        "address":  "5-6-4 kiba"
+    },
+    {
+        "hotelCode":  "00119",
+        "name":  "東橫INN 東京門前仲町永代橋",
+        "prefecture":  13,
+        "address":  "1-15-3 Eitai"
+    },
+    {
+        "hotelCode":  "00355",
+        "name":  "東橫INN 東京茅場町站",
+        "prefecture":  13,
+        "address":  "1-4-9 Nihombashi-Kayaba-cho"
+    },
+    {
+        "hotelCode":  "00368",
+        "name":  "東橫INN 東京三之輪站",
+        "prefecture":  13,
+        "address":  "2-18-5 Ryusen"
+    },
+    {
+        "hotelCode":  "00135",
+        "name":  "東橫INN 東京鶯谷站前",
+        "prefecture":  13,
+        "address":  "1-2-17 Negishi"
+    },
+    {
+        "hotelCode":  "00226",
+        "name":  "東橫INN 東京上野田原町站",
+        "prefecture":  13,
+        "address":  "3-19-5 Kotobuki"
+    },
+    {
+        "hotelCode":  "00015",
+        "name":  "東橫INN 東京淺草藏前1號店",
+        "prefecture":  13,
+        "address":  "1-3-13 Komagata"
+    },
+    {
+        "hotelCode":  "00326",
+        "name":  "東橫INN 東京淺草藏前2號店",
+        "prefecture":  13,
+        "address":  "2-7-5 Kuramae"
+    },
+    {
+        "hotelCode":  "00243",
+        "name":  "東橫INN 東京秋葉淺草橋站東口",
+        "prefecture":  13,
+        "address":  "2-14-4 Yanagi-bashi"
+    },
+    {
+        "hotelCode":  "00206",
+        "name":  "東橫INN 東京神田秋葉原",
+        "prefecture":  13,
+        "address":  "2-2-4 Bakuro-cho, Nihombashi"
+    },
+    {
+        "hotelCode":  "00157",
+        "name":  "東橫INN 東京日本橋馬喰町",
+        "prefecture":  13,
+        "address":  "14-16 Odenma-cho, Nihombashi"
+    },
+    {
+        "hotelCode":  "00156",
+        "name":  "東橫INN 東京日本橋濱町明治座前",
+        "prefecture":  13,
+        "address":  "1-1-4 hama-cho, Nihombashi"
+    },
+    {
+        "hotelCode":  "00239",
+        "name":  "東橫INN 東京日本橋稅務署前",
+        "prefecture":  13,
+        "address":  "11-5 Tomizawa-cho, Nihombashi"
+    },
+    {
+        "hotelCode":  "00170",
+        "name":  "東橫INN 東京日本橋三越前A4",
+        "prefecture":  13,
+        "address":  "11-12 Kobuna-cho, Nihombashi"
+    },
+    {
+        "hotelCode":  "00095",
+        "name":  "東橫INN 東京日本橋人形町",
+        "prefecture":  13,
+        "address":  "1-10-2 Nihombashi, Kakigara-cho"
+    },
+    {
+        "hotelCode":  "00176",
+        "name":  "東橫INN 東京站新大橋前",
+        "prefecture":  13,
+        "address":  "2-58-2 Nihombashi, hama-cho"
+    },
+    {
+        "hotelCode":  "00269",
+        "name":  "東橫INN 東京站八重洲北口",
+        "prefecture":  13,
+        "address":  "1-5-5 Yaesu"
+    },
+    {
+        "hotelCode":  "00263",
+        "name":  "東橫INN 東京大手町",
+        "prefecture":  13,
+        "address":  "1-8-10 Uchikanda"
+    },
+    {
+        "hotelCode":  "00103",
+        "name":  "東橫INN 東京溜池山王站官邸南",
+        "prefecture":  13,
+        "address":  "2-4-14 Nagata"
+    },
+    {
+        "hotelCode":  "00026",
+        "name":  "東橫INN 東京大塚站北口1號店",
+        "prefecture":  13,
+        "address":  "2-11-3 Kita-Otsuka"
+    },
+    {
+        "hotelCode":  "00139",
+        "name":  "東橫INN 東京山手線大塚站北口2號店",
+        "prefecture":  13,
+        "address":  "2-5-9 Kita-Otsuka"
+    },
+    {
+        "hotelCode":  "00096",
+        "name":  "東橫INN 東京池袋北口1號店",
+        "prefecture":  13,
+        "address":  "2-50-5 Ikebukuro"
+    },
+    {
+        "hotelCode":  "00007",
+        "name":  "東橫INN 東京池袋北口2號店",
+        "prefecture":  13,
+        "address":  "2-51-2 ikebukuro"
+    },
+    {
+        "hotelCode":  "00078",
+        "name":  "東橫INN 東京新宿歌舞伎町",
+        "prefecture":  13,
+        "address":  "2-20-15 Kabuki-cho"
+    },
+    {
+        "hotelCode":  "00281",
+        "name":  "東橫INN 東京新宿御苑前站3番出口",
+        "prefecture":  13,
+        "address":  "1-17-8 Shinjuku"
+    },
+    {
+        "hotelCode":  "00081",
+        "name":  "東橫INN 東京後樂園文京區役所前",
+        "prefecture":  13,
+        "address":  "2-2-11 Koishikawa"
+    },
+    {
+        "hotelCode":  "00280",
+        "name":  "東橫INN 東京京濱東北線王子站北口",
+        "prefecture":  13,
+        "address":  "2-1-1 Oji"
+    },
+    {
+        "hotelCode":  "00296",
+        "name":  "東橫INN 東京赤羽站東口",
+        "prefecture":  13,
+        "address":  "1-11-11 Akabane"
+    },
+    {
+        "hotelCode":  "00109",
+        "name":  "東橫INN 東京赤羽站東口一號街",
+        "prefecture":  13,
+        "address":  "3-2-2 Akabane"
+    },
+    {
+        "hotelCode":  "00029",
+        "name":  "東橫INN 東京品川站高輪口",
+        "prefecture":  13,
+        "address":  "4-23-2 Takanawa"
+    },
+    {
+        "hotelCode":  "00049",
+        "name":  "東橫INN 東京品川青物橫丁站",
+        "prefecture":  13,
+        "address":  "3-1-20 Minami-Shinagawa"
+    },
+    {
+        "hotelCode":  "00244",
+        "name":  "東橫INN 品川港南口天王洲島",
+        "prefecture":  13,
+        "address":  "2-2-35 Higasi-shinagawa"
+    },
+    {
+        "hotelCode":  "00146",
+        "name":  "東橫INN 東京品川大井町",
+        "prefecture":  13,
+        "address":  "1-27-3 Oi"
+    },
+    {
+        "hotelCode":  "00246",
+        "name":  "東橫INN 東京品川旗之台站南口",
+        "prefecture":  13,
+        "address":  "5-6-5 Hatanodai"
+    },
+    {
+        "hotelCode":  "00042",
+        "name":  "東橫INN 東京羽田機場1號店",
+        "prefecture":  13,
+        "address":  "1-2-1 Haneda"
+    },
+    {
+        "hotelCode":  "00068",
+        "name":  "東橫INN 東京羽田機場2號店",
+        "prefecture":  13,
+        "address":  "1-1-7 Haneda"
+    },
+    {
+        "hotelCode":  "00001",
+        "name":  "東橫INN 東京蒲田1號店",
+        "prefecture":  13,
+        "address":  "8-7-7 Nishi-Kamata"
+    },
+    {
+        "hotelCode":  "00020",
+        "name":  "東橫INN 東京蒲田東口",
+        "prefecture":  13,
+        "address":  "5-18-4 Kamata"
+    },
+    {
+        "hotelCode":  "00313",
+        "name":  "東橫INN 東京大森",
+        "prefecture":  13,
+        "address":  "1-23-8 Omorikita"
+    },
+    {
+        "hotelCode":  "00261",
+        "name":  "東橫INN 東京西武池袋線東久留米站西口",
+        "prefecture":  13,
+        "address":  "1-4-8 Honcho"
+    },
+    {
+        "hotelCode":  "00216",
+        "name":  "東橫INN 東京町田站小田急線東口",
+        "prefecture":  13,
+        "address":  "1-3-3 Naka-machi"
+    },
+    {
+        "hotelCode":  "00358",
+        "name":  "東橫INN 東京南町田",
+        "prefecture":  13,
+        "address":  "4-32-1 Minamimachida"
+    },
+    {
+        "hotelCode":  "00308",
+        "name":  "東橫INN 東京調布京王線布田站",
+        "prefecture":  13,
+        "address":  "2-11-1 Fuda"
+    },
+    {
+        "hotelCode":  "00345",
+        "name":  "東橫INN 東京京王線東府中站北口",
+        "prefecture":  13,
+        "address":  "3-3-10 Midoricho"
+    },
+    {
+        "hotelCode":  "00245",
+        "name":  "東橫INN 東京立川站北口",
+        "prefecture":  13,
+        "address":  "1-13-14 Akebono-cho"
+    },
+    {
+        "hotelCode":  "00289",
+        "name":  "東橫INN 東京府中南武線南多摩站前",
+        "prefecture":  13,
+        "address":  "999 Omaru"
+    },
+    {
+        "hotelCode":  "00338",
+        "name":  "東橫INN 東京昭島站南口",
+        "prefecture":  13,
+        "address":  "1-2-24 Matsubaracho"
+    },
+    {
+        "hotelCode":  "00231",
+        "name":  "東橫INN 東京福生站前東口",
+        "prefecture":  13,
+        "address":  "4-1 Higashi-cho"
+    },
+    {
+        "hotelCode":  "00031",
+        "name":  "東横INN 東京秋川站北口",
+        "prefecture":  13,
+        "address":  "1-1-7 Akikawa"
+    },
+    {
+        "hotelCode":  "00260",
+        "name":  "東橫INN 東京八王子站北口",
+        "prefecture":  13,
+        "address":  "2-9 Misaki-cho"
+    }
+]

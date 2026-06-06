@@ -1,0 +1,22 @@
+{
+  "name": "Toyoko Inn Room Tracker",
+  "short_name": "Toyoko Tracker",
+  "description": "東橫INN 空房智慧監測中心",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0a0a0f",
+  "theme_color": "#6366f1",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "./icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ]
+}
