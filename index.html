@@ -122,17 +122,11 @@
           </button>
 
           <div id="github-controls" style="display: none; flex-direction: column; gap: 10px; margin-top: 10px;">
-            <!-- GitHub PAT Input Group -->
-            <div class="pat-input-group" style="display: flex; flex-direction: column; gap: 5px; background: rgba(99, 102, 241, 0.05); padding: 10px; border-radius: 8px; border: 1px dashed rgba(99, 102, 241, 0.2);">
-              <div style="display: flex; justify-content: space-between; align-items: center;">
-                <label for="github-pat-input" style="font-size: 0.8rem; font-weight: 600; color: var(--color-primary);">GitHub 存取權杖 (PAT)</label>
-                <a href="#" id="pat-guide-link" style="font-size: 0.75rem; color: var(--color-primary); text-decoration: underline; cursor: pointer;">如何取得？</a>
-              </div>
-              <div class="input-with-icon" style="position: relative;">
-                <input type="password" id="github-pat-input" placeholder="貼上您的 token" style="width: 100%; font-size: 0.8rem; padding: 8px 30px 8px 10px; border-radius: 6px; border: 1px solid var(--color-border); background: var(--color-bg-card); color: var(--color-text-primary);" autocomplete="off">
-                <i class="fa-solid fa-eye-slash" id="toggle-pat-visibility" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: var(--color-text-muted); font-size: 0.85rem;"></i>
-              </div>
-            </div>
+            <!-- 自動更新設定按鈕移到原本權杖的位置 -->
+            <a id="github-actions-btn" href="#" target="_blank" class="btn btn-github" style="text-decoration: none; justify-content: center; width: 100%; display: none;">
+              <i class="fa-brands fa-github"></i>
+              <span>設定(按我)</span>
+            </a>
           </div>
         </div>
         
@@ -190,10 +184,7 @@
         <div class="header-right">
           <!-- Refresh controls -->
           <div class="action-buttons">
-            <a id="github-actions-btn" href="#" target="_blank" class="btn btn-github" style="display: none; text-decoration: none;">
-              <i class="fa-brands fa-github"></i>
-              <span>自動更新設定並啟動爬網</span>
-            </a>
+
             <button id="refresh-now-btn" class="btn btn-accent">
               <i class="fa-solid fa-rotate"></i>
               <span>立即更新空房</span>
